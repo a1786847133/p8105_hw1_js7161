@@ -15,11 +15,11 @@ library(ggplot2)
 data("penguins", package = "palmerpenguins")
 ```
 
-The penguins dataset contains measurements of adult penguins near Palmer Station in Antarctica. It has `r nrow(penguins)` rows and `r ncol(penguins)` columns.
+The penguins dataset has `r nrow(penguins)` rows and `r ncol(penguins)` columns. It contains data on penguins near Palmer Station in Antarctica.
 
-The species are `r paste(levels(penguins$species), collapse = ", ")`. The islands are `r paste(levels(penguins$island), collapse = ", ")`. Other variables include bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g, sex, and year. Bill and flipper measurements are in millimeters, and body mass is in grams. Sex includes female and male, with some missing values. The study years range from `r min(penguins$year)` to `r max(penguins$year)`.
+The species are `r paste(levels(penguins$species), collapse = ", ")`. The islands are `r paste(levels(penguins$island), collapse = ", ")`. Other variables include bill_length_mm, bill_depth_mm, flipper_length_mm, body_mass_g, sex, and year. Bill and flipper measurements are in millimeters. Body mass is in grams. Sex includes female and male, with some missing values. The years range from `r min(penguins$year)` to `r max(penguins$year)`.
 
-The mean flipper length is `r round(mean(penguins$flipper_length_mm, na.rm = TRUE), 2)` mm. Missing values are excluded from this calculation.
+The mean flipper length is `r round(mean(penguins$flipper_length_mm, na.rm = TRUE), 2)` mm. Missing values are left out.
 
 ```{r penguin-plot}
 penguin_plot = ggplot(
@@ -35,8 +35,7 @@ penguin_plot = ggplot(
     x = "Bill length (mm)",
     y = "Flipper length (mm)",
     color = "Species"
-  ) +
-  theme_minimal()
+  )
 
 penguin_plot
 
@@ -50,4 +49,39 @@ ggsave(
 )
 ```
 
-Species is a categorical variable, so the plot uses a separate color for each species. Rows missing either plotted measurement are omitted.
+## Problem 2
+
+```{r create-data}
+set.seed(123)
+
+variable_types = tibble(
+  normal_sample = rnorm(10),
+  is_positive = normal_sample > 0,
+  letter = letters[1:10],
+  group = factor(
+    rep(c("A", "B", "C"), length.out = 10),
+    levels = c("A", "B", "C")
+  )
+)
+
+variable_types
+```
+
+```{r calculate-means}
+mean(pull(variable_types, normal_sample))
+mean(pull(variable_types, is_positive))
+mean(pull(variable_types, letter))
+mean(pull(variable_types, group))
+```
+
+The mean works for normal_sample and is_positive. For is_positive, TRUE counts as 1 and FALSE counts as 0. Its mean is the share of sample values greater than zero.
+
+The means of letter and group return NA with warnings. mean() does not treat text or factors as numbers.
+
+```{r convert-types, echo = TRUE, results = "hide", warning = FALSE}
+as.numeric(pull(variable_types, is_positive))
+as.numeric(pull(variable_types, letter))
+as.numeric(pull(variable_types, group))
+```
+
+TRUE becomes 1 and FALSE becomes 0, so their mean works. The letters become NA with a warning because they cannot be read as numbers. The factor becomes 1, 2, and 3 for A, B, and C. These numbers only label groups, so their average is not useful. R does not use these numbers when taking the mean of a factor without converting it first.
